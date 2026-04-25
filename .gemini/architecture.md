@@ -22,7 +22,7 @@
 
 - **평탄한 폴더 구조 (Anti-gravity)**: `front/` 디렉터리 내부에 하위 폴더를 두지 않고 `index.html`, `style.css`, `app.js`, `api.js`, `ui.js`, `utils.js`를 수평 배치하여 복잡성을 낮췄습니다.
 - **함수 및 모듈의 원자화**:
-  - `api.js`: 백엔드 통신(현재 Mock Data) 전담
+  - `api.js`: 백엔드 및 외부 기관 API 통신 전담 (업비트 실시간 API 연동 검증 완료)
   - `ui.js`: DOM 조작 및 화면 렌더링 전담
   - `utils.js`: 정규식 마스킹 등 부수효과가 없는 순수 함수 전담
   - `app.js`: 데이터 흐름 제어, 상태 관리 및 이벤트 바인딩 전담

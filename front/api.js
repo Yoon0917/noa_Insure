@@ -38,10 +38,31 @@ let mockData = [
 
 /** 초기 인터페이스 관제 데이터 조회 */
 export const fetchInterfaces = async () => {
-  // 네트워크 지연 시간 시뮬레이션
-  return new Promise((resolve) =>
-    setTimeout(() => resolve([...mockData]), 400),
-  );
+  try {
+    // 실제 업비트 API 통신 테스트
+    const response = await fetch(
+      "https://api.upbit.com/v1/ticker?markets=KRW-BTC",
+    );
+    const data = await response.json();
+
+    const upbitItem = {
+      id: "upbit-btc",
+      traceId: generateTraceId(),
+      institution: "업비트 (KRW-BTC)",
+      protocol: "REST API",
+      status: response.ok ? "SUCCESS" : "ERROR",
+      time: getCurrentTime(),
+      payload: JSON.stringify(data[0]),
+      statusCode: response.status,
+    };
+
+    // 기존 mockData에서 이전 업비트 항목을 제외하고 최상단에 갱신 (새로고침 시 중복 방지)
+    mockData = [upbitItem, ...mockData.filter((d) => d.id !== "upbit-btc")];
+  } catch (error) {
+    console.error("API 통신 실패:", error);
+  }
+
+  return [...mockData];
 };
 
 /** 에러 발생 건에 대한 즉각 재처리 (수동 Retry) */
