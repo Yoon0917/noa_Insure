@@ -1,7 +1,13 @@
-import { fetchInterfaces, retryInterface, simulateError } from "./api.js";
+import {
+  fetchInterfaces,
+  retryInterface,
+  discardInterface,
+  simulateError,
+} from "./api.js";
 import {
   updateDashboardStats,
   renderTable,
+  renderDlqTable,
   openModal,
   closeModal,
   showToast,
@@ -28,6 +34,10 @@ const updateUI = () => {
     onRetry: handleRetry,
     onViewLog: openModal,
   });
+  // 현재 뷰가 DLQ 모드라면 대기열 테이블도 함께 갱신
+  if (!document.getElementById("view-dlq").classList.contains("hidden")) {
+    renderDlqView();
+  }
 };
 
 // 재처리 로직 (에러 모서리 케이스 대응)
@@ -62,6 +72,64 @@ const handleCustomSimulateSubmit = async (e) => {
   showToast("새로운 에러(장애)가 발생했습니다!", "error");
 };
 
+// --- DLQ(대기열) 전용 기능 로직 ---
+
+const renderDlqView = () => {
+  const filterVal = document.getElementById("dlq-filter-status").value;
+  // 에러 혹은 지연 상태인 항목만 추출 (처리 포기된 항목 제외)
+  let dlqData = currentData.filter(
+    (d) =>
+      (d.status === "ERROR" || d.status === "DELAY") &&
+      d.status !== "DISCARDED",
+  );
+
+  if (filterVal !== "ALL") {
+    dlqData = dlqData.filter((d) => d.statusCode == filterVal);
+  }
+
+  renderDlqTable(dlqData, { onViewLog: openModal });
+  document.getElementById("dlq-select-all").checked = false; // 선택 초기화
+};
+
+const handleBulkRetry = async () => {
+  const selected = Array.from(
+    document.querySelectorAll(".dlq-item-cb:checked"),
+  ).map((cb) => cb.value);
+  if (selected.length === 0)
+    return showToast("선택된 항목이 없습니다.", "error");
+
+  showToast(`${selected.length}건 일괄 재처리 시작...`, "info");
+
+  // 선택된 항목들에 대해 순차적 혹은 병렬 재처리 요청 (현재 Promise.all 활용)
+  try {
+    await Promise.all(selected.map((id) => retryInterface(id)));
+    showToast("일괄 재처리가 완료되었습니다.", "success");
+  } catch (error) {
+    showToast("일부 항목의 재처리에 실패했습니다.", "error");
+  }
+
+  await loadData();
+};
+
+const handleBulkDiscard = async () => {
+  const selected = Array.from(
+    document.querySelectorAll(".dlq-item-cb:checked"),
+  ).map((cb) => cb.value);
+  if (selected.length === 0)
+    return showToast("선택된 항목이 없습니다.", "error");
+
+  showToast(`${selected.length}건 처리 포기 진행 중...`, "info");
+
+  try {
+    await Promise.all(selected.map((id) => discardInterface(id)));
+    showToast("선택한 항목이 관제 대상에서 영구 제외되었습니다.", "success");
+  } catch (error) {
+    showToast("처리 포기 적용에 실패했습니다.", "error");
+  }
+
+  await loadData();
+};
+
 // 반응형 사이드바 제어 로직
 const toggleSidebar = () => {
   document.getElementById("sidebar").classList.toggle("open");
@@ -89,8 +157,15 @@ const handleNavClick = (e) => {
   const menuText = target.querySelector(".menu-text").innerText;
   document.getElementById("page-title").innerText = menuText;
 
-  // 대시보드 외 메뉴는 준비 중 안내
-  if (menuId !== "dashboard") {
+  // SPA 라우팅 로직
+  if (menuId === "dashboard") {
+    document.getElementById("view-dashboard").classList.remove("hidden");
+    document.getElementById("view-dlq").classList.add("hidden");
+  } else if (menuId === "dlq") {
+    document.getElementById("view-dashboard").classList.add("hidden");
+    document.getElementById("view-dlq").classList.remove("hidden");
+    renderDlqView(); // 진입 시 렌더링
+  } else {
     showToast(`'${menuText}' 메뉴는 현재 준비 중입니다.`, "info");
   }
 
@@ -116,6 +191,25 @@ const init = () => {
   document
     .getElementById("simulate-form")
     .addEventListener("submit", handleCustomSimulateSubmit);
+
+  // DLQ 관련 이벤트 바인딩
+  document
+    .getElementById("dlq-filter-status")
+    .addEventListener("change", renderDlqView);
+  document
+    .getElementById("btn-bulk-retry")
+    .addEventListener("click", handleBulkRetry);
+  document
+    .getElementById("btn-bulk-discard")
+    .addEventListener("click", handleBulkDiscard);
+
+  // 전체 선택 체크박스 로직
+  document.getElementById("dlq-select-all").addEventListener("change", (e) => {
+    const isChecked = e.target.checked;
+    document.querySelectorAll(".dlq-item-cb").forEach((cb) => {
+      cb.checked = isChecked;
+    });
+  });
 
   // 네비게이션 이벤트 바인딩
   document.querySelectorAll(".nav-item a").forEach((link) => {

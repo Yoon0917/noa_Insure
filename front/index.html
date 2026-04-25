@@ -25,6 +25,12 @@
               >
             </li>
             <li class="nav-item">
+              <a href="#" data-menu="dlq"
+                ><span class="icon">🚨</span>
+                <span class="menu-text">장애/미처리 대기열</span></a
+              >
+            </li>
+            <li class="nav-item">
               <a href="#" data-menu="client-status"
                 ><span class="icon">🏢</span>
                 <span class="menu-text">제휴사/고객사 현황</span></a
@@ -83,83 +89,143 @@
         </header>
 
         <main class="container">
-          <!-- 대시보드 요약 (상태 통계) -->
-          <section class="dashboard-summary">
-            <div class="card total">
-              <h3>전체 트랜잭션</h3>
-              <p id="stat-total" class="stat-value">0</p>
-            </div>
-            <div class="card success">
-              <h3>정상 (Success)</h3>
-              <p id="stat-success" class="stat-value">0</p>
-            </div>
-            <div class="card error">
-              <h3>장애 (Error)</h3>
-              <p id="stat-error" class="stat-value">0</p>
-            </div>
-            <div class="card delay">
-              <h3>지연 (Delay)</h3>
-              <p id="stat-delay" class="stat-value">0</p>
-            </div>
-          </section>
+          <!-- 대시보드 뷰 -->
+          <div id="view-dashboard" class="view-section active">
+            <!-- 대시보드 요약 (상태 통계) -->
+            <section class="dashboard-summary">
+              <div class="card total">
+                <h3>전체 트랜잭션</h3>
+                <p id="stat-total" class="stat-value">0</p>
+              </div>
+              <div class="card success">
+                <h3>정상 (Success)</h3>
+                <p id="stat-success" class="stat-value">0</p>
+              </div>
+              <div class="card error">
+                <h3>장애 (Error)</h3>
+                <p id="stat-error" class="stat-value">0</p>
+              </div>
+              <div class="card delay">
+                <h3>지연 (Delay)</h3>
+                <p id="stat-delay" class="stat-value">0</p>
+              </div>
+            </section>
 
-          <!-- 대시보드 시각화 차트 (상태 비율) -->
-          <section class="dashboard-visual">
-            <h3>트랜잭션 상태 비율 현황</h3>
-            <div class="progress-bar-container">
-              <div
-                id="bar-success"
-                class="progress-segment success"
-                style="width: 0%"
-              ></div>
-              <div
-                id="bar-error"
-                class="progress-segment error"
-                style="width: 0%"
-              ></div>
-              <div
-                id="bar-delay"
-                class="progress-segment delay"
-                style="width: 0%"
-              ></div>
-            </div>
-            <div class="progress-labels">
-              <span class="label"
-                ><span class="dot success"></span>정상
-                <span id="label-success">0%</span></span
-              >
-              <span class="label"
-                ><span class="dot error"></span>장애
-                <span id="label-error">0%</span></span
-              >
-              <span class="label"
-                ><span class="dot delay"></span>지연
-                <span id="label-delay">0%</span></span
-              >
-            </div>
-          </section>
+            <!-- 대시보드 시각화 차트 (상태 비율) -->
+            <section class="dashboard-visual">
+              <h3>트랜잭션 상태 비율 현황</h3>
+              <div class="progress-bar-container">
+                <div
+                  id="bar-success"
+                  class="progress-segment success"
+                  style="width: 0%"
+                ></div>
+                <div
+                  id="bar-error"
+                  class="progress-segment error"
+                  style="width: 0%"
+                ></div>
+                <div
+                  id="bar-delay"
+                  class="progress-segment delay"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <div class="progress-labels">
+                <span class="label"
+                  ><span class="dot success"></span>정상
+                  <span id="label-success">0%</span></span
+                >
+                <span class="label"
+                  ><span class="dot error"></span>장애
+                  <span id="label-error">0%</span></span
+                >
+                <span class="label"
+                  ><span class="dot delay"></span>지연
+                  <span id="label-delay">0%</span></span
+                >
+              </div>
+            </section>
 
-          <!-- 인터페이스 통신 상태 목록 -->
-          <section class="interface-list">
-            <h2>실시간 인터페이스 상태 현황</h2>
-            <div class="table-responsive">
-              <table id="interface-table">
-                <thead>
-                  <tr>
-                    <th>Trace ID</th>
-                    <th>대상 기관</th>
-                    <th>상태</th>
-                    <th>프로토콜</th>
-                    <th>발생 시간</th>
-                    <th>운영 액션</th>
-                  </tr>
-                </thead>
-                <tbody id="table-body">
-                  <!-- JS를 통해 데이터 렌더링 -->
-                </tbody>
-              </table>
-            </div>
-          </section>
+            <!-- 인터페이스 통신 상태 목록 -->
+            <section class="interface-list">
+              <h2>실시간 인터페이스 상태 현황</h2>
+              <div class="table-responsive">
+                <table id="interface-table">
+                  <thead>
+                    <tr>
+                      <th>Trace ID</th>
+                      <th>대상 기관</th>
+                      <th>상태</th>
+                      <th>프로토콜</th>
+                      <th>발생 시간</th>
+                      <th>운영 액션</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body">
+                    <!-- JS를 통해 데이터 렌더링 -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- 장애/미처리 전용 대기열 (DLQ) 뷰 -->
+          <div id="view-dlq" class="view-section hidden">
+            <section class="interface-list">
+              <h2>장애/미처리 집중 관리 대기열</h2>
+              <div class="dlq-toolbar">
+                <div class="filter-group">
+                  <label
+                    for="dlq-filter-status"
+                    style="
+                      font-size: 0.85rem;
+                      font-weight: 600;
+                      margin-right: 0.5rem;
+                    "
+                    >에러 사유 필터:</label
+                  >
+                  <select id="dlq-filter-status">
+                    <option value="ALL">전체 에러/지연</option>
+                    <option value="500">500 Internal Error</option>
+                    <option value="504">Timeout (504)</option>
+                    <option value="401">인증 실패 (401)</option>
+                  </select>
+                </div>
+                <div class="dlq-actions">
+                  <button id="btn-bulk-retry" class="btn retry-btn">
+                    선택 일괄 재처리
+                  </button>
+                  <button id="btn-bulk-discard" class="btn secondary">
+                    선택 처리 포기
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table id="dlq-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px; text-align: center">
+                        <input
+                          type="checkbox"
+                          id="dlq-select-all"
+                          title="전체 선택"
+                        />
+                      </th>
+                      <th>Trace ID</th>
+                      <th>대상 기관</th>
+                      <th>상태</th>
+                      <th>Status Code</th>
+                      <th>발생 시간</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dlq-table-body">
+                    <!-- JS를 통해 데이터 렌더링 -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </main>
       </div>
       <!-- // main-wrapper -->

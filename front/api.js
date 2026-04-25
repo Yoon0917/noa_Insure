@@ -34,6 +34,16 @@ let mockData = [
     payload: '{"event": "policy_update", "status": "pending_in_queue"}',
     statusCode: 202,
   },
+  {
+    id: 4,
+    traceId: generateTraceId(),
+    institution: "C 페이먼트 (인증)",
+    protocol: "REST",
+    status: "ERROR",
+    time: getCurrentTime(),
+    payload: '{"error": "Unauthorized Access Token", "code": "AUTH_401"}',
+    statusCode: 401,
+  },
 ];
 
 /** 초기 인터페이스 관제 데이터 조회 */
@@ -81,6 +91,21 @@ export const retryInterface = async (id) => {
         reject(new Error("대상을 찾을 수 없습니다."));
       }
     }, 800); // 처리 시간 지연 효과
+  });
+};
+
+/** 영구 실패 건 수동 처리 포기 (Discard) */
+export const discardInterface = async (id) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const item = mockData.find((d) => d.id == id);
+      if (item) {
+        item.status = "DISCARDED"; // 상태를 버려짐으로 변경하여 관제에서 제외
+        resolve({ success: true, item });
+      } else {
+        reject(new Error("대상을 찾을 수 없습니다."));
+      }
+    }, 300);
   });
 };
 

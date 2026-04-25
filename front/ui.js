@@ -2,10 +2,12 @@ import { maskSensitiveData } from "./utils.js";
 
 // 대시보드 통계 카드 업데이트
 export const updateDashboardStats = (data) => {
-  const total = data.length;
-  const success = data.filter((d) => d.status === "SUCCESS").length;
-  const error = data.filter((d) => d.status === "ERROR").length;
-  const delay = data.filter((d) => d.status === "DELAY").length;
+  // 처리 포기(DISCARDED)된 건은 활성 관제 대상에서 제외합니다.
+  const validData = data.filter((d) => d.status !== "DISCARDED");
+  const total = validData.length;
+  const success = validData.filter((d) => d.status === "SUCCESS").length;
+  const error = validData.filter((d) => d.status === "ERROR").length;
+  const delay = validData.filter((d) => d.status === "DELAY").length;
 
   document.getElementById("stat-total").innerText = total;
   document.getElementById("stat-success").innerText = success;
@@ -43,7 +45,9 @@ export const renderTable = (data, callbacks) => {
   const tbody = document.getElementById("table-body");
   tbody.innerHTML = ""; // 초기화
 
-  data.forEach((item) => {
+  const validData = data.filter((d) => d.status !== "DISCARDED");
+
+  validData.forEach((item) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
@@ -75,6 +79,38 @@ export const renderTable = (data, callbacks) => {
         onRetry(item.id, btn);
       });
     }
+
+    tbody.appendChild(tr);
+  });
+};
+
+// 장애/미처리 대기열 전용 그리드 렌더링
+export const renderDlqTable = (data, callbacks) => {
+  const { onViewLog } = callbacks;
+  const tbody = document.getElementById("dlq-table-body");
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">대기열에 해당하는 장애 항목이 없습니다.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+        <td style="text-align: center;">
+          <input type="checkbox" class="dlq-item-cb" value="${item.id}">
+        </td>
+        <td><span class="trace-id" data-id="${item.id}">${item.traceId}</span></td>
+        <td>${item.institution}</td>
+        <td><span class="badge ${item.status.toLowerCase()}">${item.status}</span></td>
+        <td><span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">${item.statusCode}</span></td>
+        <td>${item.time}</td>
+    `;
+
+    const traceEl = tr.querySelector(".trace-id");
+    traceEl.addEventListener("click", () => onViewLog(item));
 
     tbody.appendChild(tr);
   });
