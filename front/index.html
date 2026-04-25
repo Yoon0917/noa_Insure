@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Noa Insure - 통합 인터페이스 관제 플랫폼</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- 모바일 환경을 위한 사이드바 배경(Backdrop) -->
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+      <!-- 좌측 사이드바 (LNB) -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+          <h1>Noa <span>Insure</span></h1>
+        </div>
+        <nav class="nav-menu">
+          <ul>
+            <li class="nav-item active">
+              <a href="#" data-menu="dashboard"
+                ><span class="icon">📊</span>
+                <span class="menu-text">관제 대시보드</span></a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#" data-menu="client-status"
+                ><span class="icon">🏢</span>
+                <span class="menu-text">제휴사/고객사 현황</span></a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#" data-menu="interface-manage"
+                ><span class="icon">⚙️</span>
+                <span class="menu-text">인터페이스 관리</span></a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="#" data-menu="system-setting"
+                ><span class="icon">🔧</span>
+                <span class="menu-text">시스템 설정</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- 우측 메인 영역 -->
+      <div class="main-wrapper">
+        <header class="header">
+          <div class="page-title-box">
+            <button
+              id="btn-sidebar-toggle"
+              class="sidebar-toggle-btn"
+              aria-label="메뉴 열기"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <h1 id="page-title">관제 대시보드</h1>
+          </div>
+          <div class="header-actions">
+            <button id="btn-refresh" class="btn secondary">
+              데이터 새로고침
+            </button>
+            <button id="btn-simulate" class="btn danger">
+              장애 시뮬레이션 발생
+            </button>
+          </div>
+        </header>
+
+        <main class="container">
+          <!-- 대시보드 요약 (상태 통계) -->
+          <section class="dashboard-summary">
+            <div class="card total">
+              <h3>전체 트랜잭션</h3>
+              <p id="stat-total" class="stat-value">0</p>
+            </div>
+            <div class="card success">
+              <h3>정상 (Success)</h3>
+              <p id="stat-success" class="stat-value">0</p>
+            </div>
+            <div class="card error">
+              <h3>장애 (Error)</h3>
+              <p id="stat-error" class="stat-value">0</p>
+            </div>
+            <div class="card delay">
+              <h3>지연 (Delay)</h3>
+              <p id="stat-delay" class="stat-value">0</p>
+            </div>
+          </section>
+
+          <!-- 대시보드 시각화 차트 (상태 비율) -->
+          <section class="dashboard-visual">
+            <h3>트랜잭션 상태 비율 현황</h3>
+            <div class="progress-bar-container">
+              <div
+                id="bar-success"
+                class="progress-segment success"
+                style="width: 0%"
+              ></div>
+              <div
+                id="bar-error"
+                class="progress-segment error"
+                style="width: 0%"
+              ></div>
+              <div
+                id="bar-delay"
+                class="progress-segment delay"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div class="progress-labels">
+              <span class="label"
+                ><span class="dot success"></span>정상
+                <span id="label-success">0%</span></span
+              >
+              <span class="label"
+                ><span class="dot error"></span>장애
+                <span id="label-error">0%</span></span
+              >
+              <span class="label"
+                ><span class="dot delay"></span>지연
+                <span id="label-delay">0%</span></span
+              >
+            </div>
+          </section>
+
+          <!-- 인터페이스 통신 상태 목록 -->
+          <section class="interface-list">
+            <h2>실시간 인터페이스 상태 현황</h2>
+            <div class="table-responsive">
+              <table id="interface-table">
+                <thead>
+                  <tr>
+                    <th>Trace ID</th>
+                    <th>대상 기관</th>
+                    <th>상태</th>
+                    <th>프로토콜</th>
+                    <th>발생 시간</th>
+                    <th>운영 액션</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body">
+                  <!-- JS를 통해 데이터 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
+      <!-- // main-wrapper -->
+    </div>
+    <!-- // app-layout -->
+
+    <!-- 상세 로그 및 페이로드 뷰어 모달 -->
+    <div id="log-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>상세 로그 (Trace ID: <span id="modal-trace-id"></span>)</h2>
+          <button id="btn-close-modal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="log-meta">
+            <span class="badge" id="modal-status-badge"></span>
+            <span
+              >HTTP Status Code: <strong id="modal-status-code"></strong
+            ></span>
+          </div>
+          <h3>전송 페이로드 (Masked Data)</h3>
+          <pre id="modal-payload" class="payload-box"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장애 시뮬레이션 설정 모달 -->
+    <div id="simulate-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>장애 시뮬레이션 데이터 설정</h2>
+          <button id="btn-close-simulate-modal" class="close-btn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="simulate-form">
+            <div class="form-group">
+              <label for="sim-institution">대상 기관</label>
+              <input
+                type="text"
+                id="sim-institution"
+                value="테스트 제휴사"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="sim-protocol">프로토콜</label>
+              <select id="sim-protocol">
+                <option value="REST">REST API</option>
+                <option value="SOAP">SOAP</option>
+                <option value="MQ">MQ</option>
+                <option value="SFTP">SFTP</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sim-status-code">HTTP Status Code</label>
+              <input type="number" id="sim-status-code" value="500" required />
+            </div>
+            <div class="form-group">
+              <label for="sim-payload">에러 메시지 (JSON Payload)</label>
+              <textarea id="sim-payload" rows="3" required>
+{"error": "Custom Timeout Error", "code": "SYS_999"}</textarea
+              >
+            </div>
+            <button type="submit" class="btn danger w-100">
+              장애 발생시키기
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 알림 컨테이너 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
