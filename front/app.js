@@ -122,14 +122,15 @@ const updateUI = (preserveState = false) => {
   const currentErrorCount = currentData.filter(
     (d) => d.status === "ERROR" && d.status !== "DISCARDED",
   ).length;
-  if (currentErrorCount >= 3 && currentErrorCount > lastAlertedErrorCount) {
+  if (currentErrorCount > lastAlertedErrorCount) {
+    const newErrors = currentErrorCount - lastAlertedErrorCount;
     showToast(
-      `⚠️ [위험 감지] 미처리된 장애가 ${currentErrorCount}건 있습니다. 신속한 조치가 필요합니다!`,
+      `⚠️ [장애 감지] 새로운 통신 장애가 ${newErrors}건 발생했습니다! (총 미처리: ${currentErrorCount}건)`,
       "error",
     );
-    lastAlertedErrorCount = currentErrorCount; // 과도한 반복 알림 방지
-  } else if (currentErrorCount === 0) {
-    lastAlertedErrorCount = 0; // 에러가 모두 해소되면 알림 카운트 리셋
+    lastAlertedErrorCount = currentErrorCount;
+  } else if (currentErrorCount < lastAlertedErrorCount) {
+    lastAlertedErrorCount = currentErrorCount; // 재처리나 포기로 에러가 줄어든 경우 카운트 동기화
   }
 
   // 자동 갱신(Polling) 시 스크롤 위치 유지를 위해 기존에 렌더링된 갯수만큼 유지
