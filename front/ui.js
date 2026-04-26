@@ -40,18 +40,16 @@ export const updateDashboardStats = (data) => {
 };
 
 // 인터페이스 데이터 그리드 렌더링
-export const renderTable = (data, callbacks) => {
+export const renderTable = (data, callbacks, append = false) => {
   const { onRetry, onViewLog } = callbacks;
   const tbody = document.getElementById("table-body");
-  tbody.innerHTML = ""; // 초기화
+  if (!append) tbody.innerHTML = ""; // 초기화
 
-  const validData = data.filter((d) => d.status !== "DISCARDED");
-
-  validData.forEach((item) => {
+  data.forEach((item) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-            <td><span class="trace-id" data-id="${item.id}">${item.traceId}</span></td>
+다            <td><span class="trace-id" data-id="${item.id}">${item.traceId}</span></td>
             <td>${item.institution}</td>
             <td><span class="badge ${item.status.toLowerCase()}">${item.status}</span></td>
             <td><span class="badge protocol">${item.protocol}</span></td>
@@ -85,12 +83,12 @@ export const renderTable = (data, callbacks) => {
 };
 
 // 장애/미처리 대기열 전용 그리드 렌더링
-export const renderDlqTable = (data, callbacks) => {
+export const renderDlqTable = (data, callbacks, append = false) => {
   const { onViewLog } = callbacks;
   const tbody = document.getElementById("dlq-table-body");
-  tbody.innerHTML = "";
+  if (!append) tbody.innerHTML = "";
 
-  if (data.length === 0) {
+  if (data.length === 0 && !append) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">대기열에 해당하는 장애 항목이 없습니다.</td></tr>`;
     return;
   }
@@ -151,4 +149,26 @@ export const showToast = (message, type = "info") => {
   toast.innerText = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
+};
+
+// 운영 작업 이력 테이블 렌더링
+export const renderAuditLogTable = (data) => {
+  const tbody = document.getElementById("audit-table-body");
+  if (!tbody) return;
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 2rem;">기록된 운영 작업 이력이 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data
+    .map(
+      (item) => `
+    <tr>
+      <td>${item.timestamp}</td>
+      <td><span class="badge" style="background: #e2e8f0; color: #0f172a">${item.actionType}</span></td>
+      <td><strong>${item.targetId || "-"}</strong></td>
+      <td>${item.description}</td>
+    </tr>
+  `,
+    )
+    .join("");
 };

@@ -1,7 +1,42 @@
-# Node.js
-node_modules/
-.env
+# 빌드 결과물 및 로그
+*.class
+*.log
+*.jar
+*.war
+hs_err_pid*
 
-# Build outputs
-dist/
+# Spring Boot / Gradle 관련
+.gradle/
 build/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE 관련 파일 (IntelliJ, Eclipse, VS Code 등)
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# 운영체제 시스템 파일
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 보안 및 환경 변수 파일 (비밀번호, DB 정보 등)
+.env
+.env.*
+application-secret.yml
+application-prod.yml
+
+# Node.js 모듈 (추후 프론트엔드 패키지 매니저 사용 시)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json

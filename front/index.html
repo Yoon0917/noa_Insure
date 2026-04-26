@@ -31,7 +31,7 @@
               >
             </li>
             <li class="nav-item">
-              <a href="#" data-menu="client-status"
+              <a href="#" data-menu="partners"
                 ><span class="icon">🏢</span>
                 <span class="menu-text">제휴사/고객사 현황</span></a
               >
@@ -43,9 +43,9 @@
               >
             </li>
             <li class="nav-item">
-              <a href="#" data-menu="system-setting"
-                ><span class="icon">🔧</span>
-                <span class="menu-text">시스템 설정</span></a
+              <a href="#" data-menu="audit"
+                ><span class="icon">📝</span>
+                <span class="menu-text">운영 작업 이력</span></a
               >
             </li>
           </ul>
@@ -82,8 +82,22 @@
             <button id="btn-refresh" class="btn secondary">
               데이터 새로고침
             </button>
-            <button id="btn-simulate" class="btn danger">
-              장애 시뮬레이션 발생
+            <button
+              id="btn-export-csv"
+              class="btn secondary"
+              style="margin-right: 0.5rem"
+            >
+              엑셀(CSV) 다운로드
+            </button>
+            <button
+              id="btn-random-simulate"
+              class="btn secondary"
+              style="margin-right: 0.5rem"
+            >
+              임의 시뮬레이션 발생
+            </button>
+            <button id="btn-simulate" class="btn primary">
+              시뮬레이션 실행
             </button>
           </div>
         </header>
@@ -150,8 +164,57 @@
             <!-- 인터페이스 통신 상태 목록 -->
             <section class="interface-list">
               <h2>실시간 인터페이스 상태 현황</h2>
-              <div class="table-responsive">
-                <table id="interface-table">
+
+              <!-- 대시보드 검색 및 필터 -->
+              <div
+                class="dashboard-toolbar"
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 1rem;
+                  margin-bottom: 1rem;
+                "
+              >
+                <input
+                  type="text"
+                  id="dash-search-input"
+                  placeholder="Trace ID 또는 대상 기관명 검색..."
+                  style="
+                    padding: 0.5rem 1rem;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    flex: 1;
+                    min-width: 200px;
+                  "
+                />
+                <select
+                  id="dash-status-filter"
+                  style="
+                    padding: 0.5rem 1rem;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    min-width: 150px;
+                  "
+                >
+                  <option value="ALL">전체 상태 조회</option>
+                  <option value="SUCCESS">정상 (Success)</option>
+                  <option value="ERROR">장애 (Error)</option>
+                  <option value="DELAY">지연 (Delay)</option>
+                </select>
+              </div>
+
+              <div
+                class="table-responsive"
+                style="
+                  overflow-x: auto;
+                  width: 100%;
+                  -webkit-overflow-scrolling: touch;
+                "
+              >
+                <table
+                  id="interface-table"
+                  style="min-width: 700px; width: 100%"
+                >
                   <thead>
                     <tr>
                       <th>Trace ID</th>
@@ -201,8 +264,15 @@
                   </button>
                 </div>
               </div>
-              <div class="table-responsive">
-                <table id="dlq-table">
+              <div
+                class="table-responsive"
+                style="
+                  overflow-x: auto;
+                  width: 100%;
+                  -webkit-overflow-scrolling: touch;
+                "
+              >
+                <table id="dlq-table" style="min-width: 700px; width: 100%">
                   <thead>
                     <tr>
                       <th style="width: 50px; text-align: center">
@@ -226,6 +296,46 @@
               </div>
             </section>
           </div>
+
+          <!-- 제휴사/고객사 관리 뷰 (JS Component 렌더링) -->
+          <div id="view-partners" class="view-section hidden"></div>
+
+          <!-- 인터페이스 관리 뷰 (JS Component 렌더링) -->
+          <div id="view-interface-manage" class="view-section hidden"></div>
+
+          <!-- 운영 작업 이력 (Audit Log) 뷰 -->
+          <div id="view-audit" class="view-section hidden">
+            <section class="interface-list">
+              <h2>운영자 시스템 조작 이력</h2>
+              <p style="color: #64748b; margin-bottom: 2rem">
+                컴플라이언스 준수 및 추적을 위해 재처리, 정책 변경 등 민감한
+                조작 이력이 자동 기록됩니다.
+              </p>
+
+              <div
+                class="table-responsive"
+                style="
+                  overflow-x: auto;
+                  width: 100%;
+                  -webkit-overflow-scrolling: touch;
+                "
+              >
+                <table id="audit-table" style="min-width: 700px; width: 100%">
+                  <thead>
+                    <tr>
+                      <th>발생 일시</th>
+                      <th>작업 유형</th>
+                      <th>대상 식별자 (ID)</th>
+                      <th>작업 상세 설명</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-table-body">
+                    <!-- JS 렌더링 -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </main>
       </div>
       <!-- // main-wrapper -->
@@ -239,7 +349,7 @@
           <h2>상세 로그 (Trace ID: <span id="modal-trace-id"></span>)</h2>
           <button id="btn-close-modal" class="close-btn">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto">
           <div class="log-meta">
             <span class="badge" id="modal-status-badge"></span>
             <span
@@ -256,43 +366,51 @@
     <div id="simulate-modal" class="modal hidden">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>장애 시뮬레이션 데이터 설정</h2>
+          <h2>시뮬레이션 데이터 설정</h2>
           <button id="btn-close-simulate-modal" class="close-btn">
             &times;
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto">
           <form id="simulate-form">
             <div class="form-group">
               <label for="sim-institution">대상 기관</label>
-              <input
-                type="text"
-                id="sim-institution"
-                value="테스트 제휴사"
-                required
-              />
+              <select id="sim-institution" required>
+                <option value="">제휴사를 등록해주세요.</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="sim-protocol">프로토콜</label>
-              <select id="sim-protocol">
-                <option value="REST">REST API</option>
+              <select id="sim-protocol" required>
+                <option value="REST API">REST API</option>
                 <option value="SOAP">SOAP</option>
                 <option value="MQ">MQ</option>
                 <option value="SFTP">SFTP</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="sim-status-code">HTTP Status Code</label>
-              <input type="number" id="sim-status-code" value="500" required />
+              <label for="sim-status-type">발생 유형</label>
+              <select id="sim-status-type" required>
+                <option value="SUCCESS">정상 (Success)</option>
+                <option value="ERROR">장애 (Error)</option>
+                <option value="DELAY">지연 (Delay)</option>
+              </select>
             </div>
             <div class="form-group">
-              <label for="sim-payload">에러 메시지 (JSON Payload)</label>
+              <label for="sim-status-code">HTTP Status Code</label>
+              <select id="sim-status-code" required>
+                <option value="200" selected>200 OK</option>
+                <option value="201">201 Created</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sim-payload">응답 메시지 (JSON Payload)</label>
               <textarea id="sim-payload" rows="3" required>
-{"error": "Custom Timeout Error", "code": "SYS_999"}</textarea
+{"status": "success", "message": "Success - 요청 처리 완료", "code": "SYS_200"}</textarea
               >
             </div>
-            <button type="submit" class="btn danger w-100">
-              장애 발생시키기
+            <button type="submit" class="btn primary w-100">
+              시뮬레이션 실행
             </button>
           </form>
         </div>
