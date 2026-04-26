@@ -49,7 +49,7 @@ export const renderTable = (data, callbacks, append = false) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-다            <td><span class="trace-id" data-id="${item.id}">${item.traceId}</span></td>
+            <td><span class="trace-id" data-id="${item.id}">${item.traceId}</span></td>
             <td>${item.institution}</td>
             <td><span class="badge ${item.status.toLowerCase()}">${item.status}</span></td>
             <td><span class="badge protocol">${item.protocol}</span></td>
