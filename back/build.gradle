@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.1' // Gradle 9.x 호환성을 위해 3.4.1로 상향
+    id 'org.springframework.boot' version '3.4.1' // Railway(Gradle 9.x) 호환성을 위해 3.4.1로 상향
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -17,9 +17,7 @@ java {
 springBoot {
     mainClass = 'com.noainsure.BackApplication'
 }
-jar {
-    enabled = false
-}
+
 
 repositories {
     mavenCentral()
