@@ -4,10 +4,11 @@ server:
 
 spring:
   datasource:
+    # 환경 변수 DB_URL이 없으면 기본값(jdbc:h2:mem:testdb) 작동
     url: ${DB_URL:jdbc:h2:mem:testdb}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
-
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: create # 개발 환경용. Entity 변경 시 DB 스키마 자동 업데이트
