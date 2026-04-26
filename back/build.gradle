@@ -39,3 +39,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Groovy DSL (기본 build.gradle)을 사용하는 경우
+jar {
+    enabled = false
+}
