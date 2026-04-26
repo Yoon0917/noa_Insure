@@ -18,6 +18,10 @@ springBoot {
     mainClass = 'com.noainsure.BackApplication'
 }
 
+jar {
+    enabled = false
+}
+
 repositories {
     mavenCentral()
 }
