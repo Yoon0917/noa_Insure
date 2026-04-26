@@ -8,7 +8,7 @@ const isLocal =
 // 로컬 환경일 경우 8080 포트 사용, 배포 환경일 경우 현재 브라우저 도메인(origin) 사용
 export const SERVER_URL = isLocal
   ? "http://localhost:8080"
-  : window.location.origin;
+  : "noainsure - production.up.railway.app";
 
 const API_BASE_URL = `${SERVER_URL}/api/interfaces`;
 
