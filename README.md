@@ -10,7 +10,7 @@
 
 프로젝트의 핵심 철학과 아키텍처, 그리고 개발 과정을 기록한 문서입니다. 각 링크를 클릭하여 상세 내용을 확인할 수 있습니다.
 
-### 📝 개발 히스토리 및 명세서 (`docs/`)
+### [📝 개발 히스토리 및 명세서 (`docs/`)](https://github.com/Yoon0917/noa_Insure/tree/main/docs)
 
 - 반응형 UI 개선 및 무한 스크롤 적용 기록
 - 제휴사 및 인터페이스 정책 관리 분리 구현 기록
@@ -18,7 +18,7 @@
 - 외부 통신(업비트) 연동 및 테스트 기록
 - 트러블슈팅: Spring Boot 빌드 플러그인 충돌 해결
 
-### 🤖 AI 협업 및 코딩 컨벤션 룰 (`.gemini/`)
+### [🤖 AI 협업 및 코딩 컨벤션 룰 (`.gemini/`)](https://github.com/Yoon0917/noa_Insure/tree/main/.gemini)
 
 - Vibe Coding 전체 규칙 인덱스
 - Architecture & Structure (함수 원자화, 폴더 구조 평탄화)
